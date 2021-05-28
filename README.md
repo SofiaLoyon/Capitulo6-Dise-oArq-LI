@@ -144,4 +144,73 @@ MOV PC, LR ; return to caller
 
 Los registros preservados incluyen R4-R11 y los no preservados son R0-R3 y R12, R13 y R14 tambien pueden ser preservados. Una función puede guardar y restaurar cualquiera de los registros preservados que desee usar pero puede ser cambiado a los registros no preservados libremente. 
 
+#### Llamada de Funciones Sin Hojas
+
+Una función que no llamaa otra es llamada funcion hoja, una función que llama a otra es llamada función sin hoja.
+Las anteriormente mencionadas son algo más complicadas porque necesitan guardar registros no preservados en la pila antes de llamar a otra función y después restaurar esos registros.
+**Una función sin hoja sobreescribe LR cuando se llama a otra funcion usando BL, por lo tanto siempre deberá guardar a LR en la pila para restaurarlo antes de retornar**.
+
+ ```
+ Lenguaje de Alto Nivel
+ 
+int f1(int a, int b) {
+int i, x;
+x = (a + b)*(a − b);
+for (i=0; i<a; i++)
+x = x + f2(b+i);
+return x;
+}
+int f2(int p) {
+int r;
+r = p + 5;
+return r + p;
+}
+
+Lenguaje Ensamblador ARM
+
+; R0 = a, R1 = b, R4 = i, R5 = x
+F1
+PUSH {R4, R5, LR} ; save preserved registers used by f1
+ADD R5, R0, R1 ; x = (a + b)
+SUB R12, R0, R1 ; temp = (a − b)
+MUL R5, R5, R12 ; x = x * temp = (a + b) * (a − b)
+MOV R4, #0 ; i = 0
+FOR
+CMP R4, R0 ; i < a?
+BGE RETURN ; no: exit loop
+PUSH {R0, R1} ; save nonpreserved registers
+ADD R0, R1, R4 ; argument is b + i
+BL F2 ; call f2(b+i)
+ADD R5, R5, R0 ; x = x + f2(b+i)
+POP {R0, R1} ; restore nonpreserved registers
+ADD R4, R4, #1 ; i++
+B FOR ; continue for loop
+RETURN
+MOV R0, R5 ; return value is x
+POP {R4, R5, LR} ; restore preserved registers
+MOV PC, LR ; return from f1
+; R0 = p, R4 = r
+F2
+PUSH {R4} ; save preserved registers used by f2
+ADD R4, R0, 5 ; r = p + 5
+ADD R0, R4, R0 ; return value is r + p
+POP {R4} ; restore preserved registers
+MOV PC, LR ; return from f2
+ ```
+#### Llamada de Funciones Recursivas
+Una función recursiva en una función sin hoja que se llama a si misma. Estas se comportan como llamadora y llamada; también deben guardar nos registros preservados y no preservados, por ejemplo una función factorial.
+
+#### Argumentos Adicionales y Variables Locales
+Las funciones deben tener por lo menos cuatro argumentos de entrada y muchas variables locales para mantener preservados los registros, la pila es utilizada para almacenar esta información. Si una función tiene más de cuatro argumentos, los primeros cuatro son pasados en los registros de argumentos como usualmente, los argumentos adicionales son pasados a la pila, justo arriba de SP. 
+
+Una función también puede declarar variables locales y arreglos. Las variables locales se declaran dentro de una función y solo se puede acceder a ellas dentro de esa función. Las variables locales se almacenan en R4 – R11; si hay demasiadas variables locales, también se pueden almacenar en el marco de pila de la función. En particular los arreglos son almacenados en la pila. 
+
+### Lenguaje Máquina
+
+El lenguaje ensamblador es conveniente de leer para los humanos, sin embargo los circuitos digitales solo entienden 0's y 1's. Por lo tanto un programa escrito en lenguaje ensamblador es trasladado de nemotécnicos a una representación de 0 y 1 llamado lenguaje máquina.
+
+#### Principio de Diseño 4: El buen diseño demanda buen compromiso. 
+
+ARM hace el compromiso de definir 3 formatos de instrucciones principales: Procesamiento de Datos, Memoria y Bifuración. Este pequeño número de procesos permite regularidad entre instrucciones de esta manera el decodificador de hardware se adapta mejor a las necesidades de cada instrucción.
+
 
