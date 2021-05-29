@@ -83,6 +83,90 @@ Si los registros fueran los únicos espacios de almacenamiento para los operando
 ARM utiliza una memoria direccionable por byte. Lo que es que cada byte en memoria tiene una dirección única. Una palabra de 32-bits consiste en 4 bytes de 8 bits., asi que cada palabra es un múltiplo de 4. El bit mas significativo (MSB) se ubica a la derecha y a la izquierda el bit menos significativo. También provee una instrucción de registro de carga (LDR) para leer los datos de memoria a registro. La instrucción LDR especifica la dirección de memoria utilizando el registro base y una compensación.
 STR es una instrucción de registro de almacenamiento para escribir los datos del registro a la memoria. 
 
+### Programación
+
+Los lenguajes de software como C o Java, son llamados lenguajes de programación de alto nivel ya que son escritos en un nivel más abstracto que el lenguaje ensamblador. Muchos de los lenguajes de alto nivel utilizan construcciones de software comunes como operaciones lógicas y aritméticas, execuciones condicionales, declaraciones if/else, ciclos for y while, arreglos y llamada de funciones. 
+
+#### Instrucciones de Procesamiento de Datos
+#### Instrucciones Lógicas
+
+Las intrucciones lógicas en ARM incluyen _AND, ORR(OR), EOR (XOR), BIC (BIT CLEAR)_. Estas operan bit por bit en dos fuentes y escriben el resultado en un registro destino. La primera fuente siempre es un registro y el segundo es un inmediato u otro registro. 
+Otra operación lógica, MVN (MoVe y Not), realiza un no bit a bit en la segunda fuente (un registro inmediato o) y escribe el resultado en el registro de destino.
+La instrucción BIC es eficiente para convertir los bits no deseados a cero.
+
+#### Instrucciones de Cambio
+
+Estas instrucciones cambian el valor de un registro a la izquierda o derecha, eliminando bits del final. La instrucción de rotación rota el valor de un registro derecho por arriba de 31 bits. En ARM las operaciones de cambio LSL (cambio lógico izquierdo), LSR (cambio lógico derecho), ASR (Cambio aritmético derecho), ROR (Rotación Derecha). Los cambios izquierdos siempre llenan el bit menos significativo, sin embargo los giros a la derecha pueden ser ambos lógicos (0 cambia a un bit más significativo) o aritmético (el signo del bit cambia al del bit más significativo).
+
+#### Instrucciones de Multiplicación. 
+
+La multiplicación es otra es de las operaciones aritméticas, multiplicar dos números de 32-bits produce un resultado de 64-bits. 
+La Arquitectura ARM instrucciones de multiplicación que resultan en productos en 32 y 64 bits. _MUL_ multiplica dos números de 32-bits y da como resultado un número de 32-bits, _UMULL (Multiplicacion de Long sin Signo) y SMULL (Mutliplicación de Long con Signo)_.
+
+#### Banderas de Condición
+
+En las instrucciones ARM podemos utilizar opcionalmente banderas de condición basado en el resultado y las intrucciones subsecuentes se ejecutaran de acuerdo al estado de la bandera condicional. Las banderas de condición también banderas de estatus son: **Negativo (N), Cero (Z), Carreo (C) y Desbordamiento (V).** Estas banderas son colocadas por la ALU y mantenidas en los 4 bits de arriba del Registro de estatus actual del programa 32-bits. 
+La forma más común de establecer los bits de estado es con la instrucción de comparación (CMP), que resta el segundo operando fuente del primero y establece los indicadores de condición según el resultado.
+
+#### Branching 
+
+La ventaja de una computadora sobre una calculadora es la habilidad de tomar decisiones, una compoutadora lleva a cabo multiples tareas dependiendo de la entrada. Por ejemplo condiciones if/else, ciclos while y for que condicionalmente ejecutan el código, lo cual es una manera de tomar decisiones ignorando ciertas instrucciones. 
+
+ARM y otras arquitecturas usan instrucciones branch para omitir ciertas secciones de código o repetirlas. 
+Un programa usualmente se ejecuta de forma secuencial con el contador incrementando en 4 despues de cada instrucción . Las instrucciones Branch cambian el contador del programa incluyendo dos tipos de Branch: Branch Simple (B) y Branch & Link (BL). Como en otras instrucciones ARM el branch puede ser condicional o no, también son llamados saltos en otras arquitecturas.
+
+```
+Branching Condicional 
+MOV R0, #4 ; R0 = 4
+ADD R1, R0, R0 ; R1 = R0 + R0 = 8
+CMP R0, R1 ; set flags based on R0−R1 = −4. NZCV = 1000
+BEQ THERE ; branch not taken (Z != 1)
+ORR R1, R1, #1 ; R1 = R1 OR 1 = 9
+THERE
+ADD R1, R1, #78 ; R1 = R1 + 78 = 87
+
+```
+#### Declaraciones Condicionales
+##### IF
+Una declaración IF ejecuta un bloque de código, solo cuando se conoce la condición. En lenguaje ensamblador el IF evalua la condición opuesta a la del lenguaje de alto nivel. 
+
+```
+Lenguaje de Alto Nivel
+
+if (apples == oranges)
+f = i + 1;
+f = f − i;
+
+Lenguaje Ensamblador ARM
+
+; R0 = apples, R1 = oranges, R2 = f, R3 = i
+CMP R0, R1 ; apples == oranges ?
+BNE L1 ; if not equal, skip if block
+ADD R2, R3, #1 ; if block: f = i + 1
+L1
+SUB R2, R2, R3 ; f = f − i
+
+```
+
+#### IF/ELSE
+Ejecutan uno de los dos bloques de código dependiendo de la condición. cuando la condición es conocida de ejecuta el bloque de código correspondiente. 
+
+#### SWITCH/CASE
+
+Ejecuta uno de múltiples bloques de código dependiendo de la condición. Si no se conoce ninguna de las condiciones se ejecuta el bloque de _Default_ 
+
+#### CICLOS WHILE
+
+Repiten la ejecución de un bloque de código mientras la condición no sea conocida. Así como en if/else, los ciclos while se ejecutan de manera opuesta que en los lenguajes de alto nivel; si la condición opuesta es verdadera el ciclo while se detiene.
+
+#### CICLOS FOR
+
+La inicialización de código se ejecuta antes de que el ciclo empiece, la condición se evalua al principio de cada ciclo, si la condición no es conocida el ciclo existe. Los ciclos son especialmente utiles para accesar a grandes cantidades de información similar almacenada en memoria. 
+
+#### Memoria
+
+Para facilitar el almacenamiento y acceso, los datos parecidos pueden ser agrupados en un arreglo, un arreglo contiene direcciones secuenciales de datos en memoria. cada elemento del arreglo es identificado por un número llamado índice. El número de elementos en el arreglo se le llama longitud. 
+
 #### Bytes y Caracteres
 
 Los números en el rango [-128, 127] puede ser almacenado en un solo byte. ARM provee un byte de carga (LDRB), byte de carga con signo (LDRSB), y un byte de almacenamiento (STRB) para acceder a bytes individuales en memoria. Una serie de caracteres de denomina _string_, los cuales tienen una longitufd variable, asi que los lenguajes de programación pueden proveer una forma de determinar la longitud o fianl de la cadena. En C, un caracter nulo (0x00) significa el final de un string. 
@@ -213,4 +297,170 @@ El lenguaje ensamblador es conveniente de leer para los humanos, sin embargo los
 
 ARM hace el compromiso de definir 3 formatos de instrucciones principales: Procesamiento de Datos, Memoria y Bifuración. Este pequeño número de procesos permite regularidad entre instrucciones de esta manera el decodificador de hardware se adapta mejor a las necesidades de cada instrucción.
 
+#### Instrucciones de Procesamiento de Datos
+
+El formato de instrucciones de procesamiento de datos es el más común, la primer fuente de operando es el registro, la segunda puede ser un inmediato o un registro cambiado opcionalmente. El tercer registro es el destino.
+_Rd es la abreviatura para "Registro de Destino" y Rn, Rm indican las fuentes del primer y segundo registro_.
+
+#### Instrucciones de Memoria
+
+Utilizan un formato similar a las instrucciones de procesamiento de datos con los mismos seis campos generales: cond, op, funct, Rn, Rd y Src2. Sin embargo, las instrucciones de memoria usan una codificación de campo de función diferente, tienen dos variaciones de Src2 y usan una op de 012. Rn es el registro base, Src2 contiene el desplazamiento y Rd es el registro de destino en una carga o el registro de origen en una carga. El desplazamiento es un inmediato sin signo de 12 bits (imm12) o un registro (Rm) que opcionalmente se desplaza mediante una constante (shamt5). La función se compone de seis bits de control: I, P, U, B, W y L. Los bits I (inmediato) y U (sumar) determinan si el desplazamiento es inmediato o de registro y si se debe sumar o restar.
+
+#### Instrucciones Branch 
+
+Las instrucciones Branch utilizan un operando inmediato de 24-bits con signo (imm24). Comienzan con una condición de 4-bits y un op de 2 bits lo que es 10_2. El campo de función tiene solo 2 bits. El bit superior de funct es siempre 1 para el branch. El bit inferior, L, indica el tipo de operación de bifurcación: 1 para BL y 0 para B. El campo imm24 de complemento a dos de 24 bits restante se utiliza para especificar una dirección de instrucción relativa a PC + 8.
+
+#### Modos de Direccionamiento 
+
+ARM usa cuatro modos principales: registros, inmediatos, base y direccionamiento relativo de PC. Muchas de las otras arquitecturas proveen modos de direccionamiento similares, así que entender estos modos de direccionamiento nos apoyaran a ensamblar otros lenguajes.
+El direccionamiento de base y registros tiene multiples submodos, los primeros 3 (registro, inmediatos y base) definen los modos de escritura del contador del programa (PC). 
+
+Las instrucciones de procesamiento de datos usan direccionamiento inmediato o de registro, en la cual la primer fuente del operando es el registro y la segunda puede ser opcionalmente intercambiada por una cantidad especificada en un inmediato o un tercer registro. Las instrucciones de memoria usan direccionamiento base en el cual la direccion de la base viene del registro y el desplazamiento de un inmediato. Las instrucciones Branch usan una dirección de instrucción relativa al PC, en el que la dirección de destino de la rama se calcula agregando un desplazamiento a PC + 8.
+
+#### Interpretación de Código de Lenguaje Máquina
+
+Para interpretar el lenguaje máquina, debemos decifrar los campos de cada instrucción de 32-bits. Diferentes instrucciones utilizan diferentes formatos, sin embargo todos los formatos empiezan con un campo condicional de 4 bits.
+
+![image](https://user-images.githubusercontent.com/79436710/120058541-72978e00-c000-11eb-9ee0-196b587879ef.png)
+
+#### El Poder del Programa Almacenado
+
+Un programa escrito en lenguaje máquina es una serie de números de 32-bits representando las instrucciones. Como en otros números binarios estas instrucciones pueden ser almacenadas en memoria. A esto le llamamos concepto de programa almacenado y es la razón por la cuál las computadoras son tan poderosas. Correr diferentes programas no requiere una gran cantidad de tiempo y esfuerzo para reconfigurar o recablear el hardware, solo requiere escribir el nuevo programa en memoria. Los programas almacenados ofrecen computación de propósito general, de esta manera, la computadora pede ejecutar aplicaciones desde una calculadora, a un procesador de textos, hasta un reproductor de video simplemente cambiando el programa almacenado. Las instrucciones de este tipo de programas son recuperadas de la memoria y ejecutadas por el procesador. 
+
+### Compilar, Ensamblar y Cargar.
+
+Para convertir un lenguaje de alto nivel a lenguaje máquina debemos seguir los siguientes pasos.
+
+1. El compilador traduce el código de alto nivel en código ensamblador.
+2. El ensamblador traduce el código ensambaldor a código máquina y lo coloca en un archivo objeto.
+3. El enlazador combina el código máquina con el código de las librerías y otros archivos y determina la dirección adecuada y las variables locales para producir enteramente un programa ejecutable. 
+4. Finalmente el cargador carga el programa en la memoria e inicia su ejecución.
+
+#### El Mapa de Memoria. 
+
+1. Segmento de texto: Alamecena el programa en Lenguaje Máquina.
+2. Segmento de Datos Globales: Almacena variables locales, pueden ser accesado por todas las funciones del programa; se alojan en la memoria antes de que se ejecute el programa. En ARM también se conoce como segmento de lectura y escritura.
+3. Segmento de Datos Dinámicos: Almacena la pila, se aloja y desaloja dinamicamente conforme se ejecuta el programa.
+4. Controlador de Excepciones, Sistema Operativo y Segmento de Entradas y Salidas: La parte más baja del mapa de memoria ARM está reservado para las excepciones, la parte mas alta para el sistema operativo y mapa de memoria de E/S.
+
+#### Compilación
+
+ ```
+ Ejemplo de Compilación
+ 
+ Código de Alto Nivel 
+ 
+int f, g, y; // global variables
+int sum(int a, int b) {
+return (a + b);
+}
+int main(void)
+{
+f = 2;
+g = 3;
+y = sum(f, g);
+return y;
+}
+
+Código de Lenguaje Ensamblador ARM
+
+.text
+.global sum
+.type sum, %function
+sum:
+add r0, r0, r1
+bx lr
+.global main
+.type main, %function
+main:
+push {r3, lr}
+mov r0, #2
+ldr r3, .L3
+str r0, [r3, #0]
+mov r1, #3
+ldr r3, .L3+4
+str r1, [r3, #0]
+bl sum
+ldr r3, .L3+8
+str r0, [r3, #0]
+pop {r3, pc}
+.L3:
+.word f
+.word g
+.word y
+  ```
+  
+#### Ensamblado
+  
+Un ensamblador convierte el lenguaje ensamblador en un archivo objeto que contiene el código en lenguaje máquina. Realiza dos pasos para ensamblar el código; primero asigna direcciones de instrucción y encuentra todos los símbolos, como etiquetas y nombres de variables globales. Los nombres y direcciones se los símbolos se mantienen en la tabla de símbolos. En el segundo paso el ensablador produce el código en lenguaje máquina, las direcciones para las etiquetas son tomadas de la tabla de símbolos. El código en lenguaje máquina y la tabla de símbolos es almacenada en el archivo objeto. 
+
+Podemos desensamblar el archivo objeto utilizando el comando _objdump_ para ver el código en lenguaje ensamblador junto a el código en lenguaje máquina. A su vez, podemos ver la tabla de símbolos añadiendo la etiqueta _-t_ al comando anteriormente utilizado. 
+
+#### Enlazado
+
+Los programas más grandes contienen más de un archivo. El trabajo del enlazados es combinar todos los archivos objeto y el código de inicio en un archivo de lenguaje máquina llamado ejecutable y asignar direcciones a las variables globales. El enlazador redirecciona los datos e instrucciones en archivos objeto para que no esten todos encima de los otros. Utiliza la informaciónde la tabla de símbolos para ajustar el código basado en una nueva etiqueta y las direcciones de las variables globales. 
+
+#### Carga
+
+El sistema operativo carga el programa leyendo el segmento de texto del archivo executable almacenado en el dispositivo (usalmente el disco duro) en el segmento de texto de la memoria. 
+
+### Evolución de la Arquitectura ARM
+
+El conjunto de instrucciones ARM ha visto muchas mejoras, el exitoso procesador ARM7TDMI en 1995 introdujo el conjunto de instrucciones Thumb de 16 bits en ARMv4T para mejorar la densidad del código. ARMv5TE agregó procesamiento de señal digital (DSP) e instrucciones opcionales de punto flotante. ARMv6 agregó instrucciones multimedia y mejoró el conjunto de instrucciones Thumb. ARMv7 mejoró las instrucciones de punto flotante y multimedia, renombrándolas Advanced SIMD. ARMv8 introdujo una arquitectura de 64 bits completamente nueva. Varias otras instrucciones de programación del sistema de han ido introduciendo conforme la arquitectura a evolucionado. 
+
+#### Set de Instrucciones THUMB.
+
+Las instrucciones Thumb tienen un tamaño de 16-bits de largo que permiten almacenar código de mayor densidad, son idénticas a las instrucciones ARM regulares pero generalmente tienen limitaciones como: 
+
+* Solo se puede accesar a los ocho registros del fono
+* Reusa registros como fuente y destino
+* Soporta inmediatos cortos
+* Falta de ejecución condicional
+* Siempre escribe banderas de estado
+
+Casi todas las instrucciones ARM tienen su equivalente en Thumb, ya que las instrucciones son menos poderosas es más requerido escribirlo en un programa equivalente. El conjunto de instrucciones Thumb es valioso no solo para reducir el tamaño y el costo de la memoria de almacenamiento de código, sino también para permitir un bus de 16 bits económico a la memoria de instrucciones y reducir la energía consumida al obtener instrucciones de memoria.
+
+#### Instrucciones DSP
+
+Los procesadores de señales digitales (DSP) son diseñados para manejar eficientemente señales de procesamiento de algoritmos como la Transformada de Fourier. Sus aplicaciones más comunes incluyen codificación y decodificación de video, control de motor y reconocimiento de voz. ARM provee un número de instrucciones DSP para este propósito.
+
+#### Instrucciones de Punto Flotante
+
+Estas instrucciones son mayormente usadas en gráficos, aplicaciones científicas y control de algoritmos. La aritmética de punto flotante puede ser utilizada en series ordinarias de instrucciones de procesamiento de datos pero es más rápido y consume menos energía usar instrucciones de punto flotante dedicadas y hardware.
+
+#### Instrucciones de Ahorro de Energía y Seguridad
+
+Con ARMv6K se introdujeron una serie de instrucciones que permiten ahorrar energía, la espera para interrumpir las instrucciones permite al procesador entrar en un estado de menor poder hasta que la interupción ocurra. La instrucción de espera de evento es similar pero es más efectiva em sistemas multiprocesamiento.
+
+ARMv7 Con extensiones de seguridad, el procesador define un estado seguro con limitaciones medios de entrada y acceso restringido a partes seguras de la memoria, incluso si un atacante compromete el sistema operativo, el kernel seguro puede resistir la manipulación.
+
+#### Instrucciones SIMD
+
+Es una instrucción única con múltiples iezas de información en paralelo, permite realizar varias operaciones aritméticas pequeñas a la vez, especialmente para procesamiento de gráficos. Las instrucciones SIMD más avanzadas permiten realizar funciones aritméticas básicas con punto flotante, cargar y almacenar múltiples elementos, operaciones lógicas bit a bit, comparaciones, etc.
+
+#### Arquitectura de 64-bits
+ En ARMv8 los registros se extendieron a 64-bits, asi que PC y SP no pertenecen más a los registros de propósito general. Las instrucciones de procesamiento de datos pueden operan en valores de 32 o 64 bits, sin embargo la carga y almacenamiento siempre usan direcciones de 64 bits. El campo condicional fue removido de casi todas las instrucciones pero branch aún puede ser condicional; se dobló eñ numero de registros avanzados SIMD y se añadieron instrucciones para criptografía.
+ 
+ ### Arquitectura x86
+ 
+ Esta arquitectura es un ejemplo de arquitectura CISC, cada instrucción CISC puede realizar más trabajo y normalmente necesitan menos instrucciones. Las instrucciones fueron seleccionadas de forma que fueran más compactas para ahorrar memoria, cuando la RAM era mucho más costosa de lo que lo es ahora. Las instrucciones son de longitud variable y son menores de 32-bits.
+ 
+#### Registros x86
+
+El microprocesador 8086 proveía 8 registros de 16-bits, los cuales podían ser accesados de forma separada. Cuando el 80386 de 32-bits fue introducido los registros aumentaron a 32-bits. Estos registros son llamados _EAX, ECX, EDX, BX, ESP, EBP, ESI, EDI_. La mayoría de los registros pero no todos son de propósito general, ciertas instrucciones no pueden usar ciertos registros. 
+
+#### Operandos x86
+Las instrucciones x86 pueden operar en registros, inmediatos o memoria y solo especifica dos operandos, el primero como fuente y el segundo como fuente y destino. Por eso, las instrucciones x86 siempre sobreescriben una de sus fuentes con el resultado. Todas las combinaciones son posibles excepto memoria a memoria. 
+
+#### Banderas de Estado
+ 
+x86 utiliza banderas de condición ( o estado) para tomar decisiones acerca de las ramificaciones y mantener un registro de las cargas y desbordamiento aritmético. Utiliza un registro de 32-bits llamado EFLAG para almacenar las banderas de estado.
+
+#### Instrucciones x86
+
+Tiene un set de instrucciones mayor que el de ARM. Algunas de ellas siempre actúan sobre registros específicos. LOOp siempre se almacena en ECX. PUSH, POP, CALL y RET siempre usan el puntero de pila, ESP.
+
+#### Peculiaridades de x86
+
+80286 introdujó la _segmentación_ la cuál divide la memoria en segmentos de arriba de 64kb. Cuando el sistema operativo activa la segmentación, las direcciones son computarizadas relativamente al inicio de la segmentación. El procesador comprueba las direcciones que van más allá del final del segmento e indica un error, lo que impide que los programas accedan a la memoria fuera de su propio segmento. La segmentación resultó ser una molestia para los programadores y no se utiliza en las versiones modernas del sistema operativo Windows.
 
